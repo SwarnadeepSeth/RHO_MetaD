@@ -1,0 +1,39 @@
+RESTART
+# Group definition
+prot: GROUP NDX_FILE=index.ndx NDX_GROUP=C-alpha
+Lig: GROUP NDX_FILE=index.ndx NDX_GROUP=LIG
+
+prot_COM: COM ATOMS=prot
+Lig_center: COM ATOMS=Lig
+
+ref_coord_xy: POSITION ATOM=prot_COM NOPBC
+Lig_coord: POSITION ATOM=Lig_center NOPBC
+
+rel_x: MATHEVAL ARG=Lig_coord.x,ref_coord_xy.x FUNC=x-y PERIODIC=NO
+rel_y: MATHEVAL ARG=Lig_coord.y,ref_coord_xy.y FUNC=x-y PERIODIC=NO
+
+####Define COLVARS####
+# 10A above top of bilayer
+z: MATHEVAL ARG=Lig_coord.z FUNC=x PERIODIC=NO
+# radius of cylinder
+r: MATHEVAL ARG=rel_x,rel_y FUNC=sqrt(x*x+y*y) PERIODIC=NO
+# returns -pi,pi describing theta
+theta: MATHEVAL ARG=rel_x,rel_y FUNC=atan2(y,x) PERIODIC=-pi,pi
+
+####Restraining potential of the cylinder#####
+#Bottom of Cylinder, appx 10A below bottom of bilayer
+up_restr_z: UPPER_WALLS ARG=z AT=8.0 KAPPA=25000 OFFSET=0
+#Top of Cylinder, appx 10A above top of bilayer
+low_restr_z: LOWER_WALLS ARG=z AT=2.0 KAPPA=25000 OFFSET=0
+#Cylinder wall, 20A radius
+restr_r: UPPER_WALLS ARG=r AT=2.0 KAPPA=25000 OFFSET=0
+
+metad: METAD ARG=z,theta ...
+   RESTART=YES
+   PACE=500 HEIGHT=1.0 BIASFACTOR=50 
+   SIGMA=0.5,0.125
+   FILE=HILLS GRID_MIN=0,-pi GRID_MAX=9.0,pi 
+   CALC_RCT
+...
+
+PRINT ARG=* FILE=COLVAR STRIDE=500
