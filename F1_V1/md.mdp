@@ -1,0 +1,69 @@
+define                   = -DPOSRES_CA ; position restrain the solute
+
+; VARIOUS PREPROCESSING OPTIONS
+title                    = Production Simulation
+cpp                      = /usr/bin/cpp
+
+; RUN CONTROL PARAMETERS
+integrator               = md
+tinit                    = 0       ; Starting time
+dt                       = 0.002   ; 2 femtosecond time step for integration
+
+; OUTPUT CONTROL OPTIONS
+nstlog                   = 1000  ; Writing to the log file 
+nstxtcout                = 500   ; Writing coordinates every 1 picosecond
+xtc_precision            = 500
+xtc-grps                 = System
+nstenergy                = 500  ; Writing out energy information every 1 picosecond
+
+;	NEIGHBOR SEARCHING
+nstlist                 = 10            ; frequency to update neighbor list   
+ns-type                 = grid          ; search between grids than atoms for neighbor list
+pbc                     = xyz           ; periodic boundary conditions in all directions
+rlist                   = 1.0           ; neighbour list cutoff
+
+;	ELECTROSTATICS
+coulombtype             = PME           ; accounting for long-range interactions
+;coulomb-modifier       = Potential-shift-Verlet        ; Potential-shift with the Verlet cutoff-scheme
+rcoulomb                = 1.0           ; cut-off for twin range Coulomb update
+
+;	VAN DER WAALS
+vdw-type		= Cut-off		;
+;vdw-modifier            = Potential-shift-Verlet    ; Potential-shift with the Verlet cutoff-scheme
+rvdw                    = 1.0           ; cut-off to calculate LJ
+DispCorr                = EnerPres      ; account for long range VdW
+
+;	EWALD
+fourierspacing          = 0.12          ; grid to box dimention ratio
+pme-order               = 4             ; cubic interpolation (6/8/10 increase in parallel simultaneously decreasing grid)
+ewald-rtol              = 0.00001       ; strength of ewalded potential at rcoulomb, low value needs more waves and accurate 
+
+
+; Temperature coupling  
+Tcoupl                   = nose-hoover ; Temperature coupling in NVT; velocity rescaling thermostat
+tc-grps                  = System  ; groups to couple to temperature baths
+tau_t                    = 0.5  ; time constant for coupling 
+ref_t                    = 300   ; reference temperature for coupling      
+
+
+; Pressure coupling     
+Pcoupl                   = Parrinello-Rahman ; ; type of barostat
+Pcoupltype               = Isotropic ; ; equal pressure in all directions
+tau_p                    = 2.0 ; time constant
+compressibility          = 4.5e-5 ; compressibility of water
+ref_p                    = 1.0 ; pressure = 1 bar
+
+
+; GENERATE VELOCITIES FOR STARTUP RUN
+gen_vel                  = yes 
+gen_temp                 = 300 
+gen_seed		 = 314629
+
+; OPTIONS FOR BONDS    
+constraints              = h-bonds ; ;convert all bonds involving alipahtic hydrogens to constraints
+constraint-algorithm     = lincs ; algorithm for constraining
+continuation             = no
+shake-tol                = 0.0001
+
+
+
